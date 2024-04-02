@@ -180,7 +180,9 @@ class FileChooser(VBox, ValueWidget):
         _spec_path = path
         if self._allow_typing and not os.path.exists(path):
             path = os.path.abspath(os.path.join(path, os.pardir))
+        
         path = path.removesuffix('/')
+        path = os.sep if path == '' else path
 
         try:
             # Fail early if the folder can not be read
@@ -291,8 +293,12 @@ class FileChooser(VBox, ValueWidget):
 
     def _on_dircontent_select(self, change: Mapping[str, str]) -> None:
         """Handle selecting a folder entry."""
+        pathlist_value = self._pathlist.value
+        if self._allow_typing and not os.path.exists(pathlist_value):
+            pathlist_value = os.path.abspath(os.path.join(pathlist_value, os.pardir))
+        
         new_path = os.path.realpath(os.path.join(
-            self._expand_path(self._pathlist.value),
+            self._expand_path(pathlist_value),
             self._map_disp_to_name[change['new']]
         ))
 
@@ -301,7 +307,7 @@ class FileChooser(VBox, ValueWidget):
             path = new_path
             filename = self._filename.value
         else:
-            path = self._expand_path(self._pathlist.value)
+            path = self._expand_path(pathlist_value)
             filename = self._map_disp_to_name[change['new']]
 
         self._set_form_values(path, filename)
